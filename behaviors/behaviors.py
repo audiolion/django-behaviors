@@ -4,7 +4,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
-import behaviors.querysets
+from .querysets import (AuthoredQuerySet, EditoredQuerySet,
+                        PublishedQuerySet)
 
 
 class Authored(models.Model):
@@ -16,8 +17,8 @@ class Authored(models.Model):
         settings.AUTH_USER_MODEL,
         related_name="%(app_label)s_%(class)s_author")
 
-    objects = querysets.AuthoredQuerySet.as_manager()
-    authors = querysets.AuthoredQuerySet.as_manager()
+    objects = AuthoredQuerySet.as_manager()
+    authors = AuthoredQuerySet.as_manager()
 
     class Meta:
         abstract = True
@@ -33,8 +34,8 @@ class Editored(models.Model):
         related_name="%(app_label)s_%(class)s_editor",
         blank=True, null=True)
 
-    objects = querysets.EditoredQuerySet.as_manager()
-    editors = querysets.EditoredQuerySet.as_manager()
+    objects = EditoredQuerySet.as_manager()
+    editors = EditoredQuerySet.as_manager()
 
     class Meta:
         abstract = True
@@ -61,8 +62,8 @@ class Published(models.Model):
     class Meta:
         abstract = True
 
-    objects = querysets.PublishedQuerySet.as_manager()
-    publications = querysets.PublishedQuerySet.as_manager()
+    objects = PublishedQuerySet.as_manager()
+    publications = PublishedQuerySet.as_manager()
 
     @property
     def draft(self):

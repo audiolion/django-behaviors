@@ -2,8 +2,6 @@ from __future__ import unicode_literals
 
 from django.db import models
 
-import behaviors.behaviors
-
 
 class AuthoredQuerySet(models.QuerySet):
 
@@ -20,7 +18,9 @@ class EditoredQuerySet(models.QuerySet):
 class PublishedQuerySet(models.QuerySet):
 
     def draft(self):
-        return self.filter(publication_status=behaviors.Published.DRAFT)
+        from behaviors.behaviors import Published
+        return self.filter(publication_status=Published.DRAFT)
 
     def published(self):
-        return self.filter(publication_status=behaviors.Published.PUBLISHED)
+        from behaviors.behaviors import Published
+        return self.filter(publication_status=Published.PUBLISHED)
