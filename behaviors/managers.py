@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
-                        PublishedQuerySet)
+                        PublishedQuerySet, ReleasedQuerySet)
 
 
 class AuthoredManager(models.Manager):
@@ -34,3 +34,18 @@ class PublishedManager(models.Manager):
 
     def published(self):
         return self.get_queryset().published()
+
+
+class ReleasedManager(models.Manager):
+
+    def get_queryset(self):
+        return ReleasedQuerySet(self.model, using=self._db)
+
+    def released(self):
+        return self.get_queryset().released()
+
+    def not_released(self):
+        return self.get_queryset().not_released()
+
+    def no_release_date(self):
+        return self.get_queryset().no_release_date()

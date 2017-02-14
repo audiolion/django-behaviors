@@ -1,8 +1,9 @@
 from django.db import models
 
-from behaviors.behaviors import Authored, Editored, Published, Timestamped
+from behaviors.behaviors import (Authored, Editored, Published, Released,
+                                 Timestamped)
 from behaviors.managers import (AuthoredManager, EditoredManager,
-                                PublishedManager)
+                                PublishedManager, ReleasedManager)
 from behaviors.querysets import PublishedQuerySet
 
 
@@ -22,6 +23,10 @@ class TimestampedMock(Timestamped):
     pass
 
 
+class ReleasedMock(Released):
+    pass
+
+
 class AuthoredMockManager(Authored):
     objects = AuthoredManager()
 
@@ -32,6 +37,10 @@ class EditoredMockManager(Editored):
 
 class PublishedMockManager(Published):
     objects = PublishedManager()
+
+
+class ReleasedMockManager(Released):
+    objects = ReleasedManager()
 
 
 class OverrideManager(models.Manager):

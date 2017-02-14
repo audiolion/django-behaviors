@@ -3,6 +3,12 @@
 History
 -------
 
+0.2.0 (2017-02-14)
+++++++++++++++++++
+
+* Add ``Released`` behavior for a release date on models
+* Update documentation
+
 0.1.7 (2017-02-14)
 ++++++++++++++++++
 

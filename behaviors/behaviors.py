@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
-                        PublishedQuerySet)
+                        PublishedQuerySet, ReleasedQuerySet)
 
 
 class Authored(models.Model):
@@ -72,6 +72,30 @@ class Published(models.Model):
     @property
     def published(self):
         return self.publication_status == self.PUBLISHED
+
+
+class Released(models.Model):
+    """
+    An abstract behavior representing a release_date for a model to
+    indicate when it should be listed publically.
+    """
+    release_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    objects = ReleasedQuerySet.as_manager()
+    releases = ReleasedQuerySet.as_manager()
+
+    def release_on(self, date=None):
+        if not date:
+            date = timezone.now()
+        self.release_date = date
+        self.save()
+
+    @property
+    def released(self):
+        return self.release_date and self.release_date < timezone.now()
 
 
 class Timestamped(models.Model):

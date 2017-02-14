@@ -8,10 +8,13 @@ test_django-behaviors
 Tests for `django-behaviors` querysets module.
 """
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from test_plus.test import TestCase
 
-from .models import AuthoredMock, EditoredMock, PublishedMock
+from datetime import timedelta
+
+from .models import AuthoredMock, EditoredMock, PublishedMock, ReleasedMock
 
 
 class TestAuthoredQuerySet(TestCase):
@@ -164,3 +167,44 @@ class TestPublishedQuerySet(TestCase):
         for record in queryset:
             self.assertEqual(
                 record.publication_status, PublishedMock.PUBLISHED)
+
+
+class TestReleasedQuerySet(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.past_date = timezone.now() - timedelta(weeks=1)
+        cls.future_date = timezone.now() + timedelta(weeks=1)
+        for i in range(0, 10):
+            if i % 2 == 0:
+                ReleasedMock.objects.create(release_date=cls.past_date)
+            elif i == 1:
+                ReleasedMock.objects.create()
+            else:
+                ReleasedMock.objects.create(release_date=cls.future_date)
+
+    def test_objects_all_not_affected(self):
+        queryset =ReleasedMock.objects.all()
+        self.assertIsNotNone(queryset)
+        self.assertEqual(queryset.count(), 10)
+
+    def test_manager_released(self):
+        queryset = ReleasedMock.objects.released()
+        self.assertIsNotNone(queryset)
+        self.assertEqual(queryset.count(), 5)
+        for record in queryset:
+            self.assertEqual(record.release_date, self.past_date)
+
+    def test_manager_not_released(self):
+        queryset = ReleasedMock.objects.not_released()
+        self.assertIsNotNone(queryset)
+        self.assertEqual(queryset.count(), 4)
+        for record in queryset:
+            self.assertEqual(record.release_date, self.future_date)
+
+    def test_manager_no_release_date(self):
+        queryset = ReleasedMock.objects.no_release_date()
+        self.assertIsNotNone(queryset)
+        self.assertEqual(queryset.count(), 1)
+        for record in queryset:
+            self.assertIsNone(record.release_date)

@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 from django.db import models
+from django.utils import timezone
 
 
 class AuthoredQuerySet(models.QuerySet):
@@ -22,3 +23,17 @@ class PublishedQuerySet(models.QuerySet):
 
     def published(self):
         return self.filter(publication_status='p')
+
+
+class ReleasedQuerySet(models.QuerySet):
+
+    def released(self):
+        return self.filter(~models.Q(release_date=None)).filter(
+            release_date__lte=timezone.now())
+
+    def not_released(self):
+        return self.filter(~models.Q(release_date=None)).filter(
+            release_date__gt=timezone.now())
+
+    def no_release_date(self):
+        return self.filter(models.Q(release_date=None))

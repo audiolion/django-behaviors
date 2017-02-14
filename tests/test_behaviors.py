@@ -8,10 +8,14 @@ test_django-behaviors
 Tests for `django-behaviors` behaviors module.
 """
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from test_plus.test import TestCase
 
-from .models import AuthoredMock, EditoredMock, PublishedMock, TimestampedMock
+from datetime import timedelta
+
+from .models import (AuthoredMock, EditoredMock, PublishedMock,
+                     ReleasedMock, TimestampedMock)
 
 
 class TestAuthored(TestCase):
@@ -87,6 +91,48 @@ class TestPublished(TestCase):
         self.mock.publication_status = PublishedMock.PUBLISHED
         self.mock.save()
         self.assertTrue(self.mock.published)
+
+
+class TestReleased(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock = ReleasedMock.objects.create()
+        cls.mock2 = ReleasedMock.objects.create(release_date=timezone.now())
+
+    def setUp(self):
+        self.mock.refresh_from_db()
+        self.mock2.refresh_from_db()
+
+    def test_nullable_release_date(self):
+        self.assertIsNone(self.mock.release_date)
+
+    def test_nulled_release_date_released_is_false(self):
+        self.assertFalse(self.mock.released)
+
+    def test_future_release_date_released_is_false(self):
+        week_in_advance = timezone.now() + timedelta(weeks=1)
+        self.mock.release_date = week_in_advance
+        self.mock.save()
+        self.assertFalse(self.mock.released)
+
+    def test_past_release_date_released_is_true(self):
+        self.mock.release_date = timezone.now()
+        self.mock.save()
+        self.assertTrue(self.mock.released)
+
+    def test_release_on_no_date_provided(self):
+        self.mock.release_on()
+        self.assertTrue(self.mock.released)
+
+    def test_release_on_future_date_provided(self):
+        week_in_advance = timezone.now() + timedelta(weeks=1)
+        self.mock.release_on(week_in_advance)
+        self.assertFalse(self.mock.released)
+
+    def test_release_on_past_date_provided(self):
+        self.mock.release_on(timezone.now())
+        self.assertTrue(self.mock.released)
 
 
 class TestTimestamped(TestCase):

@@ -8,14 +8,17 @@ test_django-behaviors
 Tests for `django-behaviors` managers module.
 """
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 from test_plus.test import TestCase
 
+from datetime import timedelta
+
 from behaviors.querysets import (AuthoredQuerySet, EditoredQuerySet,
-                                 PublishedQuerySet)
+                                 PublishedQuerySet, ReleasedQuerySet)
 
 from .models import (AuthoredMockManager, EditoredMockManager,
-                     PublishedMockManager)
+                     PublishedMockManager, ReleasedMockManager)
 
 
 class TestAuthoredMockManager(TestCase):
@@ -96,3 +99,34 @@ class TestPublishedMockManager(TestCase):
     def test_published_manager_method(self):
         queryset = PublishedMockManager.objects.published()
         self.assertEquals(queryset.count(), 5)
+
+
+class TestReleasedMockManager(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.past_date = timezone.now() - timedelta(weeks=1)
+        cls.future_date = timezone.now() + timedelta(weeks=1)
+        for i in range(0, 10):
+            if i % 2 == 0:
+                ReleasedMockManager.objects.create(release_date=cls.past_date)
+            elif i == 1:
+                ReleasedMockManager.objects.create()
+            else:
+                ReleasedMockManager.objects.create(release_date=cls.future_date)
+
+    def test_manager_get_queryset_returns_released_queryset(self):
+        queryset = ReleasedMockManager.objects.get_queryset()
+        self.assertTrue(type(queryset) is ReleasedQuerySet)
+
+    def test_released_manager_method(self):
+        queryset = ReleasedMockManager.objects.released()
+        self.assertEquals(queryset.count(), 5)
+
+    def test_not_released_manager_method(self):
+        queryset = ReleasedMockManager.objects.not_released()
+        self.assertEquals(queryset.count(), 4)
+
+    def test_no_release_date_manager_method(self):
+        queryset = ReleasedMockManager.objects.no_release_date()
+        self.assertEquals(queryset.count(), 1)
