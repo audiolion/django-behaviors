@@ -1,3 +1,3 @@
-__version__ = '0.1.7'
+__version__ = '0.2.0'
 
 default_app_config = 'behaviors.apps.BehaviorsConfig'
