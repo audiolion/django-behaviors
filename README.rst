@@ -18,7 +18,7 @@ Django Behaviors
 Common behaviors for Django Models, e.g. Timestamps, Publishing, Authoring/Editing and more.
 
 Documentation
--------------
+=============
 
 Quickstart
 ----------
@@ -37,18 +37,34 @@ Add it to your `INSTALLED_APPS`:
         ...
     )
 
+Features
+--------
+
+``behaviors`` makes it easy to integrate common behaviors into your django models:
+
+- **Documented**, **tested**, and **easy to use**
+- **Timestamped** to add ``created`` and ``modified`` attributes to your models
+- **Authored** to add an ``author`` to your models
+- **Editored** to add an ``editor`` to your models
+- **Published** to add a ``publication_status`` (draft or published) to your models
+- **Released** to add a ``release_date`` to your models
+- Easily compose together multiple ``behaviors`` to get desired functionality (e.g. ``Authored`` and ``Editored``)
+- Custom ``QuerySet`` methods added as managers to your models to utilize the added fields
+- Easily compose together multiple ``queryset`` or ``manager`` to get desired functionality
+
 Table of Contents
 -----------------
 
-- `Features`_
+- `Behaviors`_
    - `Timestamped`_
    - `Authored`_
    - `Editored`_
    - `Published`_
+   - `Released`_
 - `Mixing in with Custom Managers`_
 - `Mixing Multiple Behaviors`_
 
-Features
+Behaviors
 ---------
 
 Timestamped Model
@@ -62,6 +78,20 @@ Timestamped Model
     class MyModel(Timestamped):
         name = models.CharField(max_length=100)
 
+
+    >>> m = MyModel.objects.create(name='dj')
+    >>> m.created
+    '2017-02-14 17:20:19.835517+00:00'
+    >>> m.modified
+    None
+    >>> m.changed
+    False
+    >>> m.save()
+    >>> m.modified
+    '2017-02-14 17:20:46.836395+00:00'
+    >>> m.changed
+    True
+
 Provides ``MyModel`` with the fields ``created`` and ``modified``. ``modified`` is initially
 blank and will be assigned after the next save of the object.
 
@@ -74,11 +104,18 @@ Authored Model
 .. code-block:: python
 
     # models.py
-    from behaviors.behaviors import Authored, Editored, Timestamped, Published
+    from behaviors.behaviors import Authored
 
 
     class MyModel(Authored):
         name = models.CharField(max_length=100)
+
+    >>> m = MyModel.objects.create(author=User.objects.all()[0])
+    >>> m.author
+    <User: ...>
+    >>> queryset = MyModel.objects.authored_by(User.objects.all()[0])
+    >>> queryset.count()
+    1
 
 Provides ``MyModel`` with the ``author`` field which is a `ForeignKey` on the _settings.AUTH_USER_MODEL. The author is a required field and must
 be provided on initial ``POST`` requests that create an object.
@@ -89,7 +126,7 @@ on object creation:
 .. code-block:: python
 
     # forms.py
-    from behaviors.forms import AuthoredModelForm, EditoredModelForm
+    from behaviors.forms import AuthoredModelForm
     from .models import MyModel
 
 
@@ -171,12 +208,12 @@ To get all ``MyModel`` instances authored by people whose name starts with 'Jo'
 .. code-block:: python
 
     # case is insensitive so 'joe' or 'Joe' matches
-    MyModel.objects.authored_by('Jo')
-    >>> [MyModel, MyModel, ...]
+    >>> MyModel.objects.authored_by('Jo')
+    [MyModel, MyModel, ...]
 
     # or use the authors manager variable
-    MyModel.authors.authored_by('Jo')
-    >>> [MyModel, MyModel, ...]
+    >>> MyModel.authors.authored_by('Jo')
+    [MyModel, MyModel, ...]
 
 See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
@@ -188,11 +225,20 @@ Editored Model
 .. code-block:: python
 
     # models.py
-    from behaviors.behaviors import Authored, Editored, Timestamped, Published
+    from behaviors.behaviors import Editored
 
 
     class MyModel(Editored):
         name = models.CharField(max_length=100)
+
+    >>> m = MyModel.objects.create()
+    >>> m.editor
+    None
+    >>> m.editor = User.objects.all()[0]
+    >>> m.save()
+    >>> queryset = MyModel.objects.edited_by(User.objects.all()[0])
+    >>> queryset.count()
+    1
 
 The ``Editored`` behavior is the same as the ``Authored`` behavior except it provides
 an ``editor`` field instead and the field is **not required**. By default the ``editor``
@@ -205,7 +251,7 @@ your form.
 .. code-block:: python
 
     # forms.py
-    from behaviors.forms import AuthoredModelForm, EditoredModelForm
+    from behaviors.forms import EditoredModelForm
     from .models import MyModel
 
 
@@ -295,12 +341,12 @@ To get all ``MyModel`` instances edited by people whose name starts with 'Jo'
 .. code-block:: python
 
     # case is insensitive so 'joe' or 'Joe' matches
-    MyModel.objects.edited_by('Jo')
-    >>> [MyModel, MyModel, ...]
+    >>> MyModel.objects.edited_by('Jo')
+    [MyModel, MyModel, ...]
 
     # or use the editors manager variable
-    MyModel.editors.edited_by('Jo')
-    >>> [MyModel, MyModel, ...]
+    >>> MyModel.editors.edited_by('Jo')
+    [MyModel, MyModel, ...]
 
 See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
@@ -315,11 +361,29 @@ has two states: 'Draft' or 'Published'.
 .. code-block:: python
 
     # models.py
-    from behaviors.behaviors import Authored, Editored, Timestamped, Published
+    from behaviors.behaviors import Published
 
 
     class MyModel(Published):
         name = models.CharField(max_length=100)
+
+    >>> m = MyModel.objects.create(name='dj')
+    >>> m.publication_status
+    u'd'
+    >>> m.get_publication_status_display()
+    u'Draft'
+    >>> MyModel.objects.published().count()
+    0
+    >>> MyModel.objects.draft().count()
+    1
+    >>> m.publication_status = MyModel.PUBLISHED
+    >>> m.save()
+    >>> m.publication_status
+    u'p'
+    >>> m.get_publication_status_display()
+    u'Published'
+    >>> MyModel.objects.published().count()
+    1
 
 The ``publication_status`` field defaults to ``Published.DRAFT`` when you make new
 models unless you supply the ``Published.PUBLISHED`` attribute to the ``publication_status``
@@ -340,14 +404,78 @@ the ``publications`` variable as a fallback if ``objects`` is overrode.
 
 .. code-block:: python
 
+    # returns all MyModel.PUBLISHED
     MyModel.objects.published()
     MyModel.publications.published()
-    # returns all MyModel.PUBLISHED
 
+    # returns all MyModel.DRAFT
     MyModel.objects.draft()
     MyModel.publications.draft()
-    # returns all MyModel.DRAFT
 
+
+Released Model
+````````````````
+
+The ``Released`` behavior adds a field ``release_date`` to your model. The field
+is **not_required**. The release date can be set with the ``release_on(datetime)`` method.
+
+.. code-block:: python
+
+    # models.py
+    from django.utils import timezone
+    from datetime import timedelta
+    from behaviors.behaviors import Released
+
+
+    class MyModel(Released):
+        name = models.CharField(max_length=100)
+
+    >>> m = MyModel.objects.create(name='dj')
+    >>> m.release_date
+    None
+    >>> MyModel.objects.no_release_date().count()
+    1
+    >>> m.release_on()
+    >>> MyModel.objects.no_release_date().count()
+    0
+    >>> MyModel.objects.released().count()
+    1
+    >>> m.release_on(timezone.now() + timedelta(weeks=1))
+    >>> MyModel.objects.not_released().count()
+    1
+    >>> MyModel.objects.released().count()
+    0
+
+The ``release_on`` method defaults to the current time so that the object is immediately
+released. You can also provide a date to the method to release on a certain date. ``release_on()``
+just serves as a wrapper to setting and saving the date.
+
+You can always provide a ``release_date`` on object creation:
+
+.. code-block:: python
+
+    MyModel.objects.create(name='Jim-bob Cooter', release_date=timezone.now())
+
+
+Released QuerySet
+...................
+
+The ``Released`` behavior attaches to the default ``objects`` variable and
+the ``releases`` variable as a fallback if ``objects`` is overrode.
+
+.. code-block:: python
+
+    # returns all not released MyModel objects
+    MyModel.objects.not_released()
+    MyModel.releases.not_released()
+
+    # returns all released MyModel objects
+    MyModel.objects.released()
+    MyModel.releases.released()
+
+    # returns all no release date MyModel objects
+    MyModel.objects.no_release_date()
+    MyModel.releases.no_release_date()
 
 Mixing in with Custom Managers
 ------------------------------
@@ -456,6 +584,14 @@ methods work on ``objects``, provide a custom manager with all the mixins.
         # MyModel.objects.draft() works
         objects = MyModelQuerySet()
 
+    # you can also chain queryset methods
+    >>> u = User.objects.all()[0]
+    >>> u2 = User.objects.all()[1]
+    >>> m = MyModel.objects.create(author=u, editor=u2)
+    >>> MyModel.objects.published().authored_by(u).count()
+    1
+
+
 Running Tests
 -------------
 
@@ -482,6 +618,7 @@ Tools used in rendering this package:
 .. _`Authored`: #authored-model
 .. _`Editored`: #editored-model
 .. _`Published`: #published-model
+.. _`Released`: #released-model
 .. _`settings.AUTH_USER_MODEL`: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL
 .. _`Mixing in with Custom Managers`: #mixing-in-with-custom-managers
 .. _`Mixing Multiple Behaviors`: #mixing-in-multiple-behaviors
