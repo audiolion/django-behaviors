@@ -184,7 +184,7 @@ class TestReleasedQuerySet(TestCase):
                 ReleasedMock.objects.create(release_date=cls.future_date)
 
     def test_objects_all_not_affected(self):
-        queryset =ReleasedMock.objects.all()
+        queryset = ReleasedMock.objects.all()
         self.assertIsNotNone(queryset)
         self.assertEqual(queryset.count(), 10)
 
