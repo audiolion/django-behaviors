@@ -18,9 +18,7 @@ class EditoredQuerySet(models.QuerySet):
 class PublishedQuerySet(models.QuerySet):
 
     def draft(self):
-        from behaviors.behaviors import Published
-        return self.filter(publication_status=Published.DRAFT)
+        return self.filter(publication_status='d')
 
     def published(self):
-        from behaviors.behaviors import Published
-        return self.filter(publication_status=Published.PUBLISHED)
+        return self.filter(publication_status='p')
