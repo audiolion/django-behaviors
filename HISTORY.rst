@@ -3,6 +3,12 @@
 History
 -------
 
+0.1.7 (2017-02-14)
+++++++++++++++++++
+
+* Remove an unused import
+* Integrate with Lintly
+
 0.1.6 (2017-02-14)
 ++++++++++++++++++
 

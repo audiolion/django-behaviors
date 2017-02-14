@@ -11,6 +11,10 @@ Django Behaviors
 .. image:: https://codecov.io/gh/audiolion/django-behaviors/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/audiolion/django-behaviors
 
+.. image:: https://lintly.com/gh/audiolion/django-behaviors/badge.svg
+    :target: https://lintly.com/gh/audiolion/django-behaviors/
+    :alt: Lintly
+
 Common behaviors for Django Models, e.g. Timestamps, Publishing, Authoring/Editing and more.
 
 Documentation
@@ -32,7 +36,7 @@ Add it to your `INSTALLED_APPS`:
         'behaviors.apps.BehaviorsConfig',
         ...
     )
-    
+
 Table of Contents
 -----------------
 
