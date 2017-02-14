@@ -3,7 +3,12 @@
 History
 -------
 
-0.1.4 (2017-02-14)
+0.1.6 (2017-02-14)
+++++++++++++++++++
+
+* Drop python3.3 support for Django 1.8 because 1.8 no longer supports it
+
+0.1.5 (2017-02-14)
 ++++++++++++++++++
 
 * Fix import error for py2.7 builds
