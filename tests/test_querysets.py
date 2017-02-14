@@ -75,6 +75,7 @@ class TestAuthoredQuerySet(TestCase):
         queryset = AuthoredMock.authors.authored_by('Nobody')
         self.assertEqual(queryset.count(), 0)
 
+
 class TestEditoredQuerySet(TestCase):
 
     @classmethod
@@ -121,15 +122,6 @@ class TestEditoredQuerySet(TestCase):
         queryset = EditoredMock.editors.edited_by('Nobody')
         self.assertEqual(queryset.count(), 0)
 
-    def test_empty_editor_returns_all(self):
-        queryset = EditoredMock.editors.edited_by('')
-        self.assertEqual(queryset.count(), 9)
-
-    def test_editors_all_not_affected(self):
-        queryset = EditoredMock.editors.all()
-        self.assertIsNotNone(queryset)
-        self.assertEqual(EditoredMock.editors.all().count(), 10)
-
     def test_editors_editored_by(self):
         queryset = EditoredMock.editors.edited_by(self.editor)
         self.assertIsNotNone(queryset)
@@ -141,10 +133,6 @@ class TestEditoredQuerySet(TestCase):
         self.assertEqual(queryset.count(), 1)
         for record in queryset:
             self.assertEqual(record.editor, self.editor2)
-
-    def test_editors_editored_by_no_results(self):
-        queryset = EditoredMock.editors.edited_by('Nobody')
-        self.assertEqual(queryset.count(), 0)
 
 
 class TestPublishedQuerySet(TestCase):

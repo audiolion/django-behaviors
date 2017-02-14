@@ -14,7 +14,7 @@ from django.test.client import RequestFactory
 
 
 from .forms import AuthoredModelFormMock, EditoredModelFormMock
-from .models import AuthoredMock, EditoredMock, PublishedMock, TimestampedMock
+from .models import AuthoredMock, EditoredMock
 
 
 class TestAuthoredModelForm(TransactionTestCase):
@@ -103,7 +103,6 @@ class TestEditoredModelForm(TransactionTestCase):
         self.assertEqual(obj.editor, self.editor)
 
     def test_no_integrity_error_when_no_editor_provided(self):
-        from django.db.utils import IntegrityError
         self.assertEqual(EditoredMock.objects.all().count(), 0)
         form = EditoredModelFormMock(data={}, request=None)
         self.assertTrue(form.is_valid())

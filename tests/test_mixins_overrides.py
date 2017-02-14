@@ -37,7 +37,7 @@ class TestOverrideObjectsManager(TestCase):
 
     def test_objects_authored_by_doesnt_work(self):
         with self.assertRaises(AttributeError):
-            queryset = OverrideObjectsManager.objects.authored_by(self.author.username)
+            OverrideObjectsManager.objects.authored_by(self.author.username)
 
     def test_authors_authored_by_work(self):
         queryset = OverrideObjectsManager.authors.authored_by(self.author.username)
@@ -94,9 +94,9 @@ class TestOverrideObjectsQuerySet(TestCase):
 
     def test_objects_draft_published_doesnt_work(self):
         with self.assertRaises(AttributeError):
-            queryset = OverrideObjectsQuerySet.objects.draft()
+            OverrideObjectsQuerySet.objects.draft()
         with self.assertRaises(AttributeError):
-            queryset = OverrideObjectsQuerySet.objects.published()
+            OverrideObjectsQuerySet.objects.published()
 
     def test_publications_draft_published_by_work(self):
         queryset = OverrideObjectsQuerySet.publications.draft()
