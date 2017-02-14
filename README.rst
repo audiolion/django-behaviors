@@ -32,6 +32,17 @@ Add it to your `INSTALLED_APPS`:
         'behaviors.apps.BehaviorsConfig',
         ...
     )
+    
+Table of Contents
+-----------------
+
+- `Features`_
+   - `Timestamped`_
+   - `Authored`_
+   - `Editored`_
+   - `Published`_
+- `Mixing in with Custom Managers`_
+- `Mixing Multiple Behaviors`_
 
 Features
 ---------
@@ -65,8 +76,7 @@ Authored Model
     class MyModel(Authored):
         name = models.CharField(max_length=100)
 
-Provides ``MyModel`` with the ``author`` field which is a `ForeignKey` on the
-.. _settings.AUTH_USER_MODEL: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL . The author is a required field and must
+Provides ``MyModel`` with the ``author`` field which is a `ForeignKey` on the _settings.AUTH_USER_MODEL. The author is a required field and must
 be provided on initial ``POST`` requests that create an object.
 
 A custom ``models.ModelForm`` is provided to automatically add the ``author``
@@ -164,7 +174,7 @@ To get all ``MyModel`` instances authored by people whose name starts with 'Jo'
     MyModel.authors.authored_by('Jo')
     >>> [MyModel, MyModel, ...]
 
-See .. _Mixing in with Custom Managers: #mixing-in-with-custom-managers for details on how
+See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
@@ -288,7 +298,7 @@ To get all ``MyModel`` instances edited by people whose name starts with 'Jo'
     MyModel.editors.edited_by('Jo')
     >>> [MyModel, MyModel, ...]
 
-See .. _Mixing in with Custom Managers: #mixin-in-with-custom-managers for details on how
+See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
@@ -462,3 +472,11 @@ Tools used in rendering this package:
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`cookiecutter-djangopackage`: https://github.com/pydanny/cookiecutter-djangopackage
+
+.. _`Timestamped`: #timestamped-model
+.. _`Authored`: #authored-model
+.. _`Editored`: #editored-model
+.. _`Published`: #published-model
+.. _`settings.AUTH_USER_MODEL`: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL
+.. _`Mixing in with Custom Managers`: #mixing-in-with-custom-managers
+.. _`Mixing Multiple Behaviors`: #mixing-in-multiple-behaviors
