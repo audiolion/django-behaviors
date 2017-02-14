@@ -432,6 +432,7 @@ multiple behaviors and, if you'd like to have all their custom ``QuerySet``
 methods work on ``objects``, provide a custom manager with all the mixins.
 
 .. code-block:: python
+
     # models.py
     from behaviors.behaviors import Authored, Editored, Published, Timestamped
     from behaviors.querysets import AuthoredQuerySet, EditoredQuerySet, PublishedQuerySet
