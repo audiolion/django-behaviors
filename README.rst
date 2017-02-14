@@ -66,7 +66,7 @@ Authored Model
         name = models.CharField(max_length=100)
 
 Provides ``MyModel`` with the ``author`` field which is a `ForeignKey` on the
-[settings.AUTH_USER_MODEL](https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL). The author is a required field and must
+.. _settings.AUTH_USER_MODEL: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL . The author is a required field and must
 be provided on initial ``POST`` requests that create an object.
 
 A custom ``models.ModelForm`` is provided to automatically add the ``author``
@@ -164,7 +164,7 @@ To get all ``MyModel`` instances authored by people whose name starts with 'Jo'
     MyModel.authors.authored_by('Jo')
     >>> [MyModel, MyModel, ...]
 
-See [Mixing in with Custom Managers](#mixin-in-with-custom-managers) for details on how
+See .. _Mixing in with Custom Managers: #mixing-in-with-custom-managers for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
@@ -288,7 +288,7 @@ To get all ``MyModel`` instances edited by people whose name starts with 'Jo'
     MyModel.editors.edited_by('Jo')
     >>> [MyModel, MyModel, ...]
 
-See [Mixing in with Custom Managers](#mixin-in-with-custom-managers) for details on how
+See .. _Mixing in with Custom Managers: #mixin-in-with-custom-managers for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
