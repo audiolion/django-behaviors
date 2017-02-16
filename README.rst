@@ -17,6 +17,8 @@ Django Behaviors
 
 Common behaviors for Django Models, e.g. Timestamps, Publishing, Authoring/Editing and more.
 
+Inspired by Kevin Stone's `Django Model Behaviors`_.
+
 Documentation
 =============
 
@@ -622,3 +624,4 @@ Tools used in rendering this package:
 .. _`settings.AUTH_USER_MODEL`: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL
 .. _`Mixing in with Custom Managers`: #mixing-in-with-custom-managers
 .. _`Mixing Multiple Behaviors`: #mixing-in-multiple-behaviors
+.. _`Django Model Behaviors`: https://www.reddit.com/r/django/comments/5u0t6t/djangobehaviors_integrate_core_common_behaviors/ddrif5z/
