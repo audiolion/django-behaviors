@@ -584,7 +584,7 @@ methods work on ``objects``, provide a custom manager with all the mixins.
         # MyModel.objects.edited_by(..) works
         # MyModel.objects.published() works
         # MyModel.objects.draft() works
-        objects = MyModelQuerySet()
+        objects = MyModelQuerySet.as_manager()
 
     # you can also chain queryset methods
     >>> u = User.objects.all()[0]
