@@ -368,6 +368,7 @@ If you are using functional views or another view type you simply need
 to make sure you pass the request object along with the form.
 
 .. code-block:: python
+
     # views.py
 
     class MyModelView(View):
@@ -394,6 +395,7 @@ If for some reason you don't want to mixin the ``EditoredModelForm`` with your e
 form you can just add the user like so:
 
 .. code-block:: python
+
     ...
     if form.is_valid()
         obj = form.save(commit=False)
@@ -408,6 +410,7 @@ if request.user is invalid.
 The ``related_name`` is set so that it will never create conflicts. Given the above example if you wanted to do a reverse foreign key lookup from the User model and ``MyModel`` was part of the ``blogs`` app it could be done like so:
 
 .. code-block:: python
+
     >>> user = User.objects.get(pk=2)
     >>> user.blogs_mymodel_editor.all()
     [<MyModel: ...>]
@@ -637,11 +640,11 @@ the ``releases`` variable as a fallback if ``objects`` is overrode.
     MyModel.releases.no_release_date()
 
 Slugged Behavior
-````````````````
+``````````````````
 
 The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model. The slug is generated on the first model creation or the next model save and is based on the ``slug_source`` attribute.
 
-**The ``slug_source`` property has no set default, you must add it to your model for the behavior to work.**
+**The** ``slug_source`` **property has no set default, you must add it to your model for the behavior to work.**
 
 .. code-block:: python
 
@@ -855,7 +858,7 @@ Tools used in rendering this package:
 .. _`Editored`: #editored-behavior
 .. _`Published`: #published-behavior
 .. _`Released`: #released-behavior
-.. _`Released`: #slugged-behavior
+.. _`Slugged`: #slugged-behavior
 .. _`settings.AUTH_USER_MODEL`: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL
 .. _`Mixing in with Custom Managers`: #mixing-in-with-custom-managers
 .. _`Mixing Multiple Behaviors`: #mixing-in-multiple-behaviors
