@@ -3,6 +3,12 @@
 History
 -------
 
+0.3.0 (2017-03-11)
+++++++++++++++++++
+
+* Add ``Slugged`` behavior adding a slug to models
+* Update documentation
+
 0.2.0 (2017-02-14)
 ++++++++++++++++++
 

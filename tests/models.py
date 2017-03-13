@@ -1,7 +1,7 @@
 from django.db import models
 
 from behaviors.behaviors import (Authored, Editored, Published, Released,
-                                 Timestamped)
+                                 Slugged, Timestamped)
 from behaviors.managers import (AuthoredManager, EditoredManager,
                                 PublishedManager, ReleasedManager)
 from behaviors.querysets import PublishedQuerySet
@@ -17,6 +17,14 @@ class EditoredMock(Editored):
 
 class PublishedMock(Published):
     pass
+
+
+class SluggedMock(Slugged):
+    title = models.CharField(max_length=255)
+
+    @property
+    def slug_source(self):
+        return self.title
 
 
 class TimestampedMock(Timestamped):

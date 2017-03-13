@@ -15,7 +15,7 @@ from test_plus.test import TestCase
 from datetime import timedelta
 
 from .models import (AuthoredMock, EditoredMock, PublishedMock,
-                     ReleasedMock, TimestampedMock)
+                     ReleasedMock, SluggedMock, TimestampedMock)
 
 
 class TestAuthored(TestCase):
@@ -133,6 +133,28 @@ class TestReleased(TestCase):
     def test_release_on_past_date_provided(self):
         self.mock.release_on(timezone.now())
         self.assertTrue(self.mock.released)
+
+
+class TestSlugged(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock = SluggedMock.objects.create(title="Slugged Title")
+        cls.mock2 = SluggedMock.objects.create(title="Slugged TITLE")
+        cls.mock3 = SluggedMock.objects.create(title="SLUGGED Title")
+
+    def setUp(self):
+        self.mock.refresh_from_db()
+        self.mock2.refresh_from_db()
+        self.mock3.refresh_from_db()
+
+    def test_title_field_slugged(self):
+        self.assertTrue(self.mock.slug, "slugged-title")
+
+    def test_generate_unique_slug(self):
+        self.assertTrue(self.mock.slug, "slugged-title")
+        self.assertTrue(self.mock2.slug, "slugged-title-1")
+        self.assertTrue(self.mock3.slug, "slugged-title-2")
 
 
 class TestTimestamped(TestCase):
