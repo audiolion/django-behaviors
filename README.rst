@@ -447,36 +447,36 @@ has two states: 'Draft' or 'Published'.
 .. code-block:: python
 
     class Published(models.Model):
-    """
-    An abstract behavior representing adding a publication status. A
-    ``publication_status`` is set on the model with Draft or Published
-    options.
-    """
-    DRAFT = 'd'
-    PUBLISHED = 'p'
+        """
+        An abstract behavior representing adding a publication status. A
+        ``publication_status`` is set on the model with Draft or Published
+        options.
+        """
+        DRAFT = 'd'
+        PUBLISHED = 'p'
 
-    PUBLICATION_STATUS_CHOICES = (
-        (DRAFT, 'Draft'),
-        (PUBLISHED, 'Published'),
-    )
+        PUBLICATION_STATUS_CHOICES = (
+            (DRAFT, 'Draft'),
+            (PUBLISHED, 'Published'),
+        )
 
-    publication_status = models.CharField(
-        "Publication Status", max_length=1,
-        choices=PUBLICATION_STATUS_CHOICES, default=DRAFT)
+        publication_status = models.CharField(
+            "Publication Status", max_length=1,
+            choices=PUBLICATION_STATUS_CHOICES, default=DRAFT)
 
-    class Meta:
-        abstract = True
+        class Meta:
+            abstract = True
 
-    objects = PublishedQuerySet.as_manager()
-    publications = PublishedQuerySet.as_manager()
+        objects = PublishedQuerySet.as_manager()
+        publications = PublishedQuerySet.as_manager()
 
-    @property
-    def draft(self):
-        return self.publication_status == self.DRAFT
+        @property
+        def draft(self):
+            return self.publication_status == self.DRAFT
 
-    @property
-    def published(self):
-        return self.publication_status == self.PUBLISHED
+        @property
+        def published(self):
+            return self.publication_status == self.PUBLISHED
 
 The class offers two properties ``draft`` and ``published`` to know object state. The ``DRAFT`` and ``PUBLISHED`` class constants will be available from the class the ``Published`` behavior is mixed into. There is also a custom manager attached to ``objects`` and ``publications`` variables to get ``published()`` or ``draft()`` querysets.
 
@@ -552,28 +552,28 @@ is **not_required**. The release date can be set with the ``release_on(datetime)
 
 .. code-block:: python
 
-class Released(models.Model):
-    """
-    An abstract behavior representing a release_date for a model to
-    indicate when it should be listed publically.
-    """
-    release_date = models.DateTimeField(null=True, blank=True)
+    class Released(models.Model):
+        """
+        An abstract behavior representing a release_date for a model to
+        indicate when it should be listed publically.
+        """
+        release_date = models.DateTimeField(null=True, blank=True)
 
-    class Meta:
-        abstract = True
+        class Meta:
+            abstract = True
 
-    objects = ReleasedQuerySet.as_manager()
-    releases = ReleasedQuerySet.as_manager()
+        objects = ReleasedQuerySet.as_manager()
+        releases = ReleasedQuerySet.as_manager()
 
-    def release_on(self, date=None):
-        if not date:
-            date = timezone.now()
-        self.release_date = date
-        self.save()
+        def release_on(self, date=None):
+            if not date:
+                date = timezone.now()
+            self.release_date = date
+            self.save()
 
-    @property
-    def released(self):
-        return self.release_date and self.release_date < timezone.now()
+        @property
+        def released(self):
+            return self.release_date and self.release_date < timezone.now()
 
 There is a ``released`` property added which determines if the object has been released. There is a custom manager attached to ``objects`` and ``releases`` variables to filter querysets on their release date.
 
@@ -646,37 +646,37 @@ The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model
 .. code-block:: python
 
     class Slugged(models.Model):
-    """
-    An abstract behavior representing adding a unique slug to a model
-    based on the slug_source property.
-    """
-    slug = models.SlugField(max_length=255, unique=True)
+        """
+        An abstract behavior representing adding a unique slug to a model
+        based on the slug_source property.
+        """
+        slug = models.SlugField(max_length=255, unique=True)
 
-    class Meta:
-        abstract = True
+        class Meta:
+            abstract = True
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = self.generate_unique_slug()
-        super(Slugged, self).save(*args, **kwargs)
+        def save(self, *args, **kwargs):
+            if not self.slug:
+                self.slug = self.generate_unique_slug()
+            super(Slugged, self).save(*args, **kwargs)
 
-    def get_slug(self):
-        return slugify(getattr(self, "slug_source"), to_lower=True)
+        def get_slug(self):
+            return slugify(getattr(self, "slug_source"), to_lower=True)
 
-    def is_unique_slug(self, slug):
-        qs = self.__class__.objects.filter(slug=slug)
-        return not qs.exists()
+        def is_unique_slug(self, slug):
+            qs = self.__class__.objects.filter(slug=slug)
+            return not qs.exists()
 
-    def generate_unique_slug(self):
-        slug = self.get_slug()
-        new_slug = slug
+        def generate_unique_slug(self):
+            slug = self.get_slug()
+            new_slug = slug
 
-        iteration = 1
-        while not self.is_unique_slug(new_slug):
-            new_slug = "%s-%d" % (slug, iteration)
-            iteration += 1
+            iteration = 1
+            while not self.is_unique_slug(new_slug):
+                new_slug = "%s-%d" % (slug, iteration)
+                iteration += 1
 
-        return new_slug
+            return new_slug
 
 The ``slug`` uses the awesome-slugify package which will preserve unicode character slugs. The ``slug`` must be unique and is guaranteed to be unique by the class appending a number ``-[0-9+]`` to the end of the slug if it is not unique. The ``unique`` field type `adds an index`_ to the ``slug`` field.
 
