@@ -11,9 +11,6 @@ Django Behaviors
 .. image:: https://codecov.io/gh/audiolion/django-behaviors/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/audiolion/django-behaviors
 
-.. image:: https://lintly.com/gh/audiolion/django-behaviors/badge.svg
-    :target: https://lintly.com/gh/audiolion/django-behaviors/
-    :alt: Lintly
 
 Common behaviors for Django Models, e.g. Timestamps, Publishing, Authoring/Editing and more.
 
@@ -50,6 +47,7 @@ Features
 - **Editored** to add an ``editor`` to your models
 - **Published** to add a ``publication_status`` (draft or published) to your models
 - **Released** to add a ``release_date`` to your models
+- **Slugged** to add a ``slug`` to your models (thanks @apirobot)
 - Easily compose together multiple ``behaviors`` to get desired functionality (e.g. ``Authored`` and ``Editored``)
 - Custom ``QuerySet`` methods added as managers to your models to utilize the added fields
 - Easily compose together multiple ``queryset`` or ``manager`` to get desired functionality
@@ -63,14 +61,47 @@ Table of Contents
    - `Editored`_
    - `Published`_
    - `Released`_
+   - `Slugged`_
 - `Mixing in with Custom Managers`_
 - `Mixing Multiple Behaviors`_
 
 Behaviors
 ---------
 
-Timestamped Model
-``````````````````
+Timestamped Behavior
+``````````````````````
+
+The model adds a ``created`` and ``modified`` field to your model.
+
+.. code-block:: python
+
+  class Timestamped(models.Model):
+      """
+      An abstract behavior representing timestamping a model with``created`` and
+      ``modified`` fields.
+      """
+      created = models.DateTimeField(auto_now_add=True, db_index=True)
+      modified = models.DateTimeField(null=True, blank=True)
+
+      class Meta:
+          abstract = True
+
+      @property
+      def changed(self):
+          return True if self.modified else False
+
+      def save(self, *args, **kwargs):
+          if self.pk:
+              self.modified = timezone.now()
+          return super(Timestamped, self).save(*args, **kwargs)
+
+``created`` is set on the next save and is set to the current UTC time.
+``modified`` is set when the object already exists and is set to the current UTC time.
+
+``MyModel.changed`` returns a boolean representing if the object has been updated after created (the ``modified`` field has been set).
+
+Here is an example of using the model, note you do not need to add ``models.Model`` because ``Timestamped`` already inherits it.
+
 .. code-block:: python
 
     # models.py
@@ -94,15 +125,30 @@ Timestamped Model
     >>> m.changed
     True
 
-Provides ``MyModel`` with the fields ``created`` and ``modified``. ``modified`` is initially
-blank and will be assigned after the next save of the object.
+Authored Behavior
+``````````````````
 
-A property is added to the model ``changed``. By calling ``mymodel.changed`` you get a
-``Boolean`` of whether or not the object has changed. After the second ``save()`` of
-the object ``modified`` will be set and ``changed`` will return ``True``.
+The authored model adds an ``author`` attribute that is a foreign key to the ``settings.AUTH_USER_MODEL`` and adds manager methods through ``objects`` and ``authors``.
 
-Authored Model
-``````````````
+.. code-block:: python
+
+  class Authored(models.Model):
+      """
+      An abstract behavior representing adding an author to a model based on the
+      AUTH_USER_MODEL setting.
+      """
+      author = models.ForeignKey(
+          settings.AUTH_USER_MODEL,
+          related_name="%(app_label)s_%(class)s_author")
+
+      objects = AuthoredQuerySet.as_manager()
+      authors = AuthoredQuerySet.as_manager()
+
+      class Meta:
+          abstract = True
+
+Here is an example of using the behavior and its ``authored_by()`` manager method:
+
 .. code-block:: python
 
     # models.py
@@ -112,15 +158,14 @@ Authored Model
     class MyModel(Authored):
         name = models.CharField(max_length=100)
 
-    >>> m = MyModel.objects.create(author=User.objects.all()[0])
+    >>> m = MyModel.objects.create(author=User.objects.get(pk=2), name='tj')
     >>> m.author
     <User: ...>
-    >>> queryset = MyModel.objects.authored_by(User.objects.all()[0])
+    >>> queryset = MyModel.objects.authored_by(User.objects.get(pk=2))
     >>> queryset.count()
     1
 
-Provides ``MyModel`` with the ``author`` field which is a `ForeignKey` on the _settings.AUTH_USER_MODEL. The author is a required field and must
-be provided on initial ``POST`` requests that create an object.
+The author is a required field and must be provided on initial ``POST`` requests that create an object.
 
 A custom ``models.ModelForm`` is provided to automatically add the ``author``
 on object creation:
@@ -197,6 +242,15 @@ form you can just add the user like so:
 But it isn't recommended, the ``AuthoredModelForm`` is tested and doesn't reassign the
 author on every save.
 
+The ``related_name`` is set so that it will never create conflicts. Given the above example if you wanted to do a reverse foreign key lookup from the User model and ``MyModel`` was part of the ``blogs`` app it could be done like so:
+
+.. code-block:: python
+    >>> user = User.objects.get(pk=2)
+    >>> user.blogs_mymodel_author.all()
+    [<MyModel: ...>]
+
+That would give a list of all ``MyModel`` objects that ``user`` has ``authored``.
+
 Authored QuerySet
 ..................
 
@@ -211,19 +265,43 @@ To get all ``MyModel`` instances authored by people whose name starts with 'Jo'
 
     # case is insensitive so 'joe' or 'Joe' matches
     >>> MyModel.objects.authored_by('Jo')
-    [MyModel, MyModel, ...]
+    [<MyModel: ...>, <MyModel: ...>, ...]
 
     # or use the authors manager variable
     >>> MyModel.authors.authored_by('Jo')
-    [MyModel, MyModel, ...]
+    [<MyModel: ...>, <MyModel: ...>, ...]
 
 See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
 
-Editored Model
-````````````````
+Editored Behavior
+``````````````````
+
+The editored model adds an ``editor`` attribute that is a foreign key to the ``settings.AUTH_USER_MODEL`` and adds manager methods through ``objects`` and ``editors`` variables.
+
+
+.. code-block:: python
+
+    class Editored(models.Model):
+    """
+    An abstract behavior representing adding an editor to a model based on the
+    AUTH_USER_MODEL setting.
+    """
+    editor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="%(app_label)s_%(class)s_editor",
+        blank=True, null=True)
+
+    objects = EditoredQuerySet.as_manager()
+    editors = EditoredQuerySet.as_manager()
+
+    class Meta:
+        abstract = True
+
+The ``Editored`` model is similar to the ``Authored`` model except the foreign key is **not required**. Here is an example of its usage:
+
 .. code-block:: python
 
     # models.py
@@ -233,7 +311,7 @@ Editored Model
     class MyModel(Editored):
         name = models.CharField(max_length=100)
 
-    >>> m = MyModel.objects.create()
+    >>> m = MyModel.objects.create(name='pj')
     >>> m.editor
     None
     >>> m.editor = User.objects.all()[0]
@@ -242,10 +320,7 @@ Editored Model
     >>> queryset.count()
     1
 
-The ``Editored`` behavior is the same as the ``Authored`` behavior except it provides
-an ``editor`` field instead and the field is **not required**. By default the ``editor``
-is blank and null, if a ``request`` object is supplied to the form it will assign a new
-editor and erase the previous editor (or the null editor).
+By default the ``editor`` is blank and null, if a ``request`` object is supplied to the form it will assign a new editor and erase the previous editor (or the null editor).
 
 Instead of using the ``AuthoredModelForm`` use the ``EditoredModelForm`` as a mixin to
 your form.
@@ -330,6 +405,15 @@ form you can just add the user like so:
 But it isn't recommended, the ``EditoredModelForm`` is tested and doesn't cause errors
 if request.user is invalid.
 
+The ``related_name`` is set so that it will never create conflicts. Given the above example if you wanted to do a reverse foreign key lookup from the User model and ``MyModel`` was part of the ``blogs`` app it could be done like so:
+
+.. code-block:: python
+    >>> user = User.objects.get(pk=2)
+    >>> user.blogs_mymodel_editor.all()
+    [<MyModel: ...>]
+
+That would give a list of all ``MyModel`` objects that ``user`` is an ``editor``.
+
 Editored QuerySet
 ..................
 
@@ -344,21 +428,57 @@ To get all ``MyModel`` instances edited by people whose name starts with 'Jo'
 
     # case is insensitive so 'joe' or 'Joe' matches
     >>> MyModel.objects.edited_by('Jo')
-    [MyModel, MyModel, ...]
+    [<MyModel: ...>, <MyModel: ...>, ...]
 
     # or use the editors manager variable
     >>> MyModel.editors.edited_by('Jo')
-    [MyModel, MyModel, ...]
+    [<MyModel: ...>, <MyModel: ...>, ...]
 
 See `Mixing in with Custom Managers`_ for details on how
 to mix in this behavior with a custom manager you have that overrides the ``objects``
 default manager.
 
-Published Model
-````````````````
+Published Behavior
+````````````````````
 
 The ``Published`` behavior adds a field ``publication_status`` to your model. The status
 has two states: 'Draft' or 'Published'.
+
+.. code-block:: python
+
+    class Published(models.Model):
+    """
+    An abstract behavior representing adding a publication status. A
+    ``publication_status`` is set on the model with Draft or Published
+    options.
+    """
+    DRAFT = 'd'
+    PUBLISHED = 'p'
+
+    PUBLICATION_STATUS_CHOICES = (
+        (DRAFT, 'Draft'),
+        (PUBLISHED, 'Published'),
+    )
+
+    publication_status = models.CharField(
+        "Publication Status", max_length=1,
+        choices=PUBLICATION_STATUS_CHOICES, default=DRAFT)
+
+    class Meta:
+        abstract = True
+
+    objects = PublishedQuerySet.as_manager()
+    publications = PublishedQuerySet.as_manager()
+
+    @property
+    def draft(self):
+        return self.publication_status == self.DRAFT
+
+    @property
+    def published(self):
+        return self.publication_status == self.PUBLISHED
+
+The class offers two properties ``draft`` and ``published`` to know object state. The ``DRAFT`` and ``PUBLISHED`` class constants will be available from the class the ``Published`` behavior is mixed into. There is also a custom manager attached to ``objects`` and ``publications`` variables to get ``published()`` or ``draft()`` querysets.
 
 .. code-block:: python
 
@@ -369,9 +489,13 @@ has two states: 'Draft' or 'Published'.
     class MyModel(Published):
         name = models.CharField(max_length=100)
 
-    >>> m = MyModel.objects.create(name='dj')
+    >>> m = MyModel.objects.create(name='cj')
     >>> m.publication_status
     u'd'
+    >>> m.draft
+    True
+    >>> m.published
+    False
     >>> m.get_publication_status_display()
     u'Draft'
     >>> MyModel.objects.published().count()
@@ -382,10 +506,18 @@ has two states: 'Draft' or 'Published'.
     >>> m.save()
     >>> m.publication_status
     u'p'
+    >>> m.draft
+    False
+    >>> m.published
+    True
     >>> m.get_publication_status_display()
     u'Published'
     >>> MyModel.objects.published().count()
     1
+    >>> MyModel.PUBLISHED
+    u'p'
+    >>> MyModel.PUBLISHED == m.publication_status
+    True
 
 The ``publication_status`` field defaults to ``Published.DRAFT`` when you make new
 models unless you supply the ``Published.PUBLISHED`` attribute to the ``publication_status``
@@ -394,9 +526,6 @@ field.
 .. code-block:: python
 
     MyModel.objects.create(name='Jim-bob Cooter', publication_status=MyModel.PUBLISHED)
-
-The attributes ``DRAFT`` and ``PUBISHED`` are inherited when you mix ``Published``
-with your model so you can call your model to get them.
 
 Published QuerySet
 ...................
@@ -415,11 +544,40 @@ the ``publications`` variable as a fallback if ``objects`` is overrode.
     MyModel.publications.draft()
 
 
-Released Model
-````````````````
+Released Behavior
+``````````````````
 
 The ``Released`` behavior adds a field ``release_date`` to your model. The field
 is **not_required**. The release date can be set with the ``release_on(datetime)`` method.
+
+.. code-block:: python
+
+class Released(models.Model):
+    """
+    An abstract behavior representing a release_date for a model to
+    indicate when it should be listed publically.
+    """
+    release_date = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+    objects = ReleasedQuerySet.as_manager()
+    releases = ReleasedQuerySet.as_manager()
+
+    def release_on(self, date=None):
+        if not date:
+            date = timezone.now()
+        self.release_date = date
+        self.save()
+
+    @property
+    def released(self):
+        return self.release_date and self.release_date < timezone.now()
+
+There is a ``released`` property added which determines if the object has been released. There is a custom manager attached to ``objects`` and ``releases`` variables to filter querysets on their release date.
+
+Here is an example of using the behavior:
 
 .. code-block:: python
 
@@ -432,7 +590,7 @@ is **not_required**. The release date can be set with the ``release_on(datetime)
     class MyModel(Released):
         name = models.CharField(max_length=100)
 
-    >>> m = MyModel.objects.create(name='dj')
+    >>> m = MyModel.objects.create(name='rj')
     >>> m.release_date
     None
     >>> MyModel.objects.no_release_date().count()
@@ -449,8 +607,7 @@ is **not_required**. The release date can be set with the ``release_on(datetime)
     0
 
 The ``release_on`` method defaults to the current time so that the object is immediately
-released. You can also provide a date to the method to release on a certain date. ``release_on()``
-just serves as a wrapper to setting and saving the date.
+released. You can also provide a date to the method to release on a certain date. ``release_on()`` just serves as a wrapper to setting and saving the date.
 
 You can always provide a ``release_date`` on object creation:
 
@@ -475,9 +632,86 @@ the ``releases`` variable as a fallback if ``objects`` is overrode.
     MyModel.objects.released()
     MyModel.releases.released()
 
-    # returns all no release date MyModel objects
+    # returns all null release date MyModel objects
     MyModel.objects.no_release_date()
     MyModel.releases.no_release_date()
+
+Slugged Behavior
+````````````````
+
+The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model. The slug is generated on the first model creation or the next model save and is based on the ``slug_source`` attribute.
+
+**The ``slug_source`` property has no set default, you must add it to your model for the behavior to work.**
+
+.. code-block:: python
+
+    class Slugged(models.Model):
+    """
+    An abstract behavior representing adding a unique slug to a model
+    based on the slug_source property.
+    """
+    slug = models.SlugField(max_length=255, unique=True)
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.generate_unique_slug()
+        super(Slugged, self).save(*args, **kwargs)
+
+    def get_slug(self):
+        return slugify(getattr(self, "slug_source"), to_lower=True)
+
+    def is_unique_slug(self, slug):
+        qs = self.__class__.objects.filter(slug=slug)
+        return not qs.exists()
+
+    def generate_unique_slug(self):
+        slug = self.get_slug()
+        new_slug = slug
+
+        iteration = 1
+        while not self.is_unique_slug(new_slug):
+            new_slug = "%s-%d" % (slug, iteration)
+            iteration += 1
+
+        return new_slug
+
+The ``slug`` uses the awesome-slugify package which will preserve unicode character slugs. The ``slug`` must be unique and is guaranteed to be unique by the class appending a number ``-[0-9+]`` to the end of the slug if it is not unique. The ``unique`` field type `adds an index`_ to the ``slug`` field.
+
+Add the ``slug_source`` property to your class when mixing in the behavior.
+
+.. code-block:: python
+
+    # models.py
+    from behaviors.behaviors import Slugged
+
+
+    class MyModel(Slugged):
+        name = models.CharField(max_length=100)
+
+        # slug_source is required for the slug to be set
+        @property
+        def slug_source(self):
+          return "prepended-text-for-fun-{}".format(self.name)
+
+        # you can now use the slug for your get_absolute_url() method
+        def get_absolute_url(self):
+          return reverse('myapp:mymodel_detail', args=[self.slug])
+
+    >>> m = MyModel.objects.create(name='aj')
+    >>> m.slug
+    'prepended-text-for-fun-aj'
+    >>> m2 = MyModel.objects.create(name='aj')
+    >>> m.slug
+    'prepended-text-for-fun-aj-1'
+    >>> m.get_absolute_url()
+    '/myapp/prepended-text-for-fun-aj/detail'
+
+Your ``slug_source`` attribute can be a mix of any of the model data available at the time of save, generally it is some ``name`` type of field. You could also hash the primary key and/or some other data as a ``slug_source``. The ``slug`` is unique so it can be used to define the ``get_absolute_url()`` method on your model.
+
+Thanks to @apirobot for sending the PR for the ``Slugged`` behavior.
 
 Mixing in with Custom Managers
 ------------------------------
@@ -616,12 +850,14 @@ Tools used in rendering this package:
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`cookiecutter-djangopackage`: https://github.com/pydanny/cookiecutter-djangopackage
 
-.. _`Timestamped`: #timestamped-model
-.. _`Authored`: #authored-model
-.. _`Editored`: #editored-model
-.. _`Published`: #published-model
-.. _`Released`: #released-model
+.. _`Timestamped`: #timestamped-behavior
+.. _`Authored`: #authored-behavior
+.. _`Editored`: #editored-behavior
+.. _`Published`: #published-behavior
+.. _`Released`: #released-behavior
+.. _`Released`: #slugged-behavior
 .. _`settings.AUTH_USER_MODEL`: https://docs.djangoproject.com/en/1.10/ref/settings/#std:setting-AUTH_USER_MODEL
 .. _`Mixing in with Custom Managers`: #mixing-in-with-custom-managers
 .. _`Mixing Multiple Behaviors`: #mixing-in-multiple-behaviors
 .. _`Django Model Behaviors`: http://blog.kevinastone.com/django-model-behaviors.html
+.. _`adds an index`: https://docs.djangoproject.com/en/dev/ref/models/fields/#unique
