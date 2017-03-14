@@ -148,8 +148,3 @@ class Timestamped(models.Model):
     @property
     def changed(self):
         return True if self.modified else False
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            self.modified = timezone.now()
-        return super(Timestamped, self).save(*args, **kwargs)
