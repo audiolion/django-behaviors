@@ -12,7 +12,7 @@ class AuthoredModelForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super(AuthoredModelForm, self).save(commit=False)
 
-        if self.request is not None and self.request.user.is_authenticated():
+        if self.request is not None and self.request.user.is_authenticated:
             if not obj.pk:
                 obj.author = self.request.user
 
@@ -32,7 +32,7 @@ class EditoredModelForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super(EditoredModelForm, self).save(commit=False)
 
-        if self.request is not None and self.request.user.is_authenticated():
+        if self.request is not None and self.request.user.is_authenticated:
             obj.editor = self.request.user
 
         if commit:
