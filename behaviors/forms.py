@@ -1,5 +1,7 @@
 from django import forms
 
+from .compat import is_authenticated
+
 
 class AuthoredModelForm(forms.ModelForm):
     class Meta:
@@ -12,7 +14,7 @@ class AuthoredModelForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super(AuthoredModelForm, self).save(commit=False)
 
-        if self.request is not None and self.request.user.is_authenticated():
+        if self.request is not None and is_authenticated(self.request.user):
             if not obj.pk:
                 obj.author = self.request.user
 
@@ -32,7 +34,7 @@ class EditoredModelForm(forms.ModelForm):
     def save(self, commit=True):
         obj = super(EditoredModelForm, self).save(commit=False)
 
-        if self.request is not None and self.request.user.is_authenticated():
+        if self.request is not None and is_authenticated(self.request.user):
             obj.editor = self.request.user
 
         if commit:

@@ -1,7 +1,7 @@
 from django.views.generic.edit import CreateView, UpdateView
 
 from .models import AuthoredMock, EditoredMock
-from .forms import AuthoredMockModelForm, EditoredMockModelForm
+from .forms import AuthoredModelFormMock, EditoredModelFormMock
 
 
 class FormKwargsRequestMixin(object):
@@ -14,9 +14,9 @@ class FormKwargsRequestMixin(object):
 
 class AuthoredMockCreateView(FormKwargsRequestMixin, CreateView):
     model = AuthoredMock
-    form = AuthoredMockModelForm
+    form = AuthoredModelFormMock
 
 
 class EditoredMockUpdateView(FormKwargsRequestMixin, UpdateView):
     model = EditoredMock
-    form = EditoredMockModelForm
+    form = EditoredModelFormMock

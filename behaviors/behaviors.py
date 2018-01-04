@@ -17,6 +17,7 @@ class Authored(models.Model):
     """
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
         related_name="%(app_label)s_%(class)s_author")
 
     objects = AuthoredQuerySet.as_manager()
@@ -33,6 +34,7 @@ class Editored(models.Model):
     """
     editor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
         related_name="%(app_label)s_%(class)s_editor",
         blank=True, null=True)
 
