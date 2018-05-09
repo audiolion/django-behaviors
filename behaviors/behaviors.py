@@ -5,7 +5,10 @@ from django.db import models
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
-from slugify import slugify
+try:
+    from slugify import slugify
+except ImportError:
+    from django.utils.text import slugify
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
                         PublishedQuerySet, ReleasedQuerySet,
@@ -120,7 +123,11 @@ class Slugged(models.Model):
         super(Slugged, self).save(*args, **kwargs)
 
     def get_slug(self):
-        return slugify(getattr(self, "slug_source"), to_lower=True)
+        try:
+            return slugify(getattr(self, "slug_source"), to_lower=True)
+        except TypeError:
+            # django.utils.text.slugify fallback
+            return slugify(getattr(self, "slug_source"))
 
     def is_unique_slug(self, slug):
         qs = self.__class__.objects.filter(slug=slug)

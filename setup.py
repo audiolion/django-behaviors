@@ -44,9 +44,9 @@ setup(
         'behaviors',
     ],
     include_package_data=True,
-    install_requires=[
-        "awesome-slugify>=1.6.5",
-    ],
+    extras={
+        "slugged": "awesome-slugify>=1.6.5",
+    },
     license="MIT",
     zip_safe=False,
     keywords='django-behaviors',
