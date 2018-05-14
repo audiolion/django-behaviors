@@ -160,8 +160,8 @@ class Timestamped(models.Model):
 
 class StoreDeleted(models.Model):
     """
-    An abstract behavior representing storedeleted a model with``deleted`` field,
-    avoiding the model object to be deleted and restored.
+    An abstract behavior representing store deleted a model with``deleted`` field,
+    avoiding the model object to be deleted and allowing you to restore it.
     """
     deleted = models.DateTimeField(null=True, blank=True)
 
