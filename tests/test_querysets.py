@@ -223,14 +223,14 @@ class TestStoreDeletedQuerySet(TestCase):
     def test_object_all_returns_only_not_deleted_models(self):
         queryset = StoreDeletedMock.objects.all()
         self.assertIsNotNone(queryset)
-        self.assertTrue(queryset.count(), 5)
+        self.assertEqual(queryset.count(), 5)
         for record in queryset:
             self.assertIsNone(record.deleted)
     
     def test_deleted_returns_only_deleted_models(self):
         queryset = StoreDeletedMock.objects.deleted()
         self.assertIsNotNone(queryset)
-        self.assertTrue(queryset.count(), 5)
+        self.assertEqual(queryset.count(), 5)
         for record in queryset:
             self.assertIsNotNone(record.deleted)
             self.assertEqual(record.deleted.date(), timezone.now().date())
@@ -238,12 +238,12 @@ class TestStoreDeletedQuerySet(TestCase):
     def test_not_deleted_returns_only_not_deleted_models(self):
         queryset = StoreDeletedMock.objects.not_deleted()
         self.assertIsNotNone(queryset)
-        self.assertTrue(queryset.count(), 5)
+        self.assertEqual(queryset.count(), 5)
         for record in queryset:
             self.assertIsNone(record.deleted)
 
     def test_allow_deleted_returns_all_models(self):
-        queryset = StoreDeletedMock.objects.not_deleted()
+        queryset = StoreDeletedMock.objects.allow_deleted()
         self.assertIsNotNone(queryset)
-        self.assertTrue(queryset.count(), 10)
+        self.assertEqual(queryset.count(), 10)
             
