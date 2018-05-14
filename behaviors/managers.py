@@ -3,7 +3,8 @@ from __future__ import unicode_literals
 from django.db import models
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
-                        PublishedQuerySet, ReleasedQuerySet)
+                        PublishedQuerySet, ReleasedQuerySet,
+                        DeletedQuerySet)
 
 
 class AuthoredManager(models.Manager):
@@ -49,3 +50,20 @@ class ReleasedManager(models.Manager):
 
     def no_release_date(self):
         return self.get_queryset().no_release_date()
+
+class DeletedManager(models.Manager):
+
+    def _get_base_queryset(self):
+        return DeletedQuerySet(self.model, using=self._db)
+
+    def get_queryset(self):
+        return self._get_base_queryset().get_queryset()
+
+    def deleted(self):
+        return self._get_base_queryset().deleted()
+
+    def undeleted(self):
+        return self._get_base_queryset().undeleted()
+
+    def allow_deleted(self):
+        return self._get_base_queryset().allow_deleted()

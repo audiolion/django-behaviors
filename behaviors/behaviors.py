@@ -7,7 +7,8 @@ from django.utils import timezone
 from slugify import slugify
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
-                        PublishedQuerySet, ReleasedQuerySet)
+                        PublishedQuerySet, ReleasedQuerySet,
+                        DeletedQuerySet)
 
 
 class Authored(models.Model):
@@ -155,3 +156,20 @@ class Timestamped(models.Model):
         if self.pk:
             self.modified = timezone.now()
         return super(Timestamped, self).save(*args, **kwargs)
+
+
+class Deleted(models.Model):
+    """
+    An abstract behavior representing deleted a model with``deleted`` field.
+    """
+    deleted = models.DateTimeField(null=True, blank=True)
+
+    objects = DeletedQuerySet.as_manager()
+
+    class Meta:
+        abstract = True
+
+    def delete(self, *args, **kwargs):
+        if self.pk:
+            self.deleted = timezone.now()
+        return super(Deleted, self).save(*args, **kwargs)
