@@ -14,7 +14,7 @@ from test_plus.test import TestCase
 
 from datetime import timedelta
 
-from .models import AuthoredMock, EditoredMock, PublishedMock, ReleasedMock
+from .models import AuthoredMock, EditoredMock, PublishedMock, ReleasedMock, StoreDeletedMock
 
 
 class TestAuthoredQuerySet(TestCase):
@@ -208,3 +208,42 @@ class TestReleasedQuerySet(TestCase):
         self.assertEqual(queryset.count(), 1)
         for record in queryset:
             self.assertIsNone(record.release_date)
+
+
+class TestStoreDeletedQuerySet(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        for i in range(0, 10):
+            if i % 2 == 0:
+                StoreDeletedMock.objects.create()
+            else:
+                StoreDeletedMock.objects.create().delete()
+
+    def test_object_all_returns_only_not_deleted_models(self):
+        queryset = StoreDeletedMock.objects.all()
+        self.assertIsNotNone(queryset)
+        self.assertTrue(queryset.count(), 5)
+        for record in queryset:
+            self.assertIsNone(record.deleted)
+    
+    def test_deleted_returns_only_deleted_models(self):
+        queryset = StoreDeletedMock.objects.deleted()
+        self.assertIsNotNone(queryset)
+        self.assertTrue(queryset.count(), 5)
+        for record in queryset:
+            self.assertIsNotNone(record.deleted)
+            self.assertEqual(record.deleted.date(), timezone.now().date())
+
+    def test_not_deleted_returns_only_not_deleted_models(self):
+        queryset = StoreDeletedMock.objects.not_deleted()
+        self.assertIsNotNone(queryset)
+        self.assertTrue(queryset.count(), 5)
+        for record in queryset:
+            self.assertIsNone(record.deleted)
+
+    def test_allow_deleted_returns_all_models(self):
+        queryset = StoreDeletedMock.objects.not_deleted()
+        self.assertIsNotNone(queryset)
+        self.assertTrue(queryset.count(), 10)
+            

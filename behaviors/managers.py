@@ -4,7 +4,7 @@ from django.db import models
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
                         PublishedQuerySet, ReleasedQuerySet,
-                        DeletedQuerySet)
+                        StoreDeletedQuerySet)
 
 
 class AuthoredManager(models.Manager):
@@ -51,10 +51,10 @@ class ReleasedManager(models.Manager):
     def no_release_date(self):
         return self.get_queryset().no_release_date()
 
-class DeletedManager(models.Manager):
+class StoreDeletedManager(models.Manager):
 
     def _get_base_queryset(self):
-        return DeletedQuerySet(self.model, using=self._db)
+        return StoreDeletedQuerySet(self.model, using=self._db)
 
     def get_queryset(self):
         return self._get_base_queryset().get_queryset()
@@ -62,8 +62,8 @@ class DeletedManager(models.Manager):
     def deleted(self):
         return self._get_base_queryset().deleted()
 
-    def undeleted(self):
-        return self._get_base_queryset().undeleted()
+    def not_deleted(self):
+        return self._get_base_queryset().not_deleted()
 
     def allow_deleted(self):
         return self._get_base_queryset().allow_deleted()

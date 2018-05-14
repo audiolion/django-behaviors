@@ -1,9 +1,9 @@
 from django.db import models
 
 from behaviors.behaviors import (Authored, Editored, Published, Released,
-                                 Slugged, Timestamped)
+                                 Slugged, Timestamped, StoreDeleted)
 from behaviors.managers import (AuthoredManager, EditoredManager,
-                                PublishedManager, ReleasedManager)
+                                PublishedManager, ReleasedManager, StoreDeletedManager)
 from behaviors.querysets import PublishedQuerySet
 
 
@@ -95,3 +95,6 @@ class MixinQuerySet(PublishedQuerySet, models.QuerySet):
 
 class MixinObjectsQuerySet(Published):
     objects = MixinQuerySet.as_manager()
+
+class StoreDeletedMock(StoreDeleted):
+    objects = StoreDeletedManager()

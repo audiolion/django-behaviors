@@ -38,16 +38,16 @@ class ReleasedQuerySet(models.QuerySet):
     def no_release_date(self):
         return self.filter(models.Q(release_date=None))
 
-class DeletedQuerySet(models.QuerySet):
+class StoreDeletedQuerySet(models.QuerySet):
 
     def get_queryset(self):
-        return self.undeleted()
+        return self.not_deleted()
 
     def deleted(self):
-        return self.filter(models.Q(deleted=None))
-
-    def undeleted(self):
         return self.exclude(deleted__isnull=True)
+
+    def not_deleted(self):
+        return self.exclude(deleted__isnull=False)
     
     def allow_deleted(self):
         return self

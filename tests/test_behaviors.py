@@ -15,7 +15,8 @@ from test_plus.test import TestCase
 from datetime import timedelta
 
 from .models import (AuthoredMock, EditoredMock, PublishedMock,
-                     ReleasedMock, SluggedMock, TimestampedMock)
+                     ReleasedMock, SluggedMock, TimestampedMock,
+                     StoreDeletedMock)
 
 
 class TestAuthored(TestCase):
@@ -172,3 +173,16 @@ class TestTimestamped(TestCase):
     def test_timestamp_changed_after_save(self):
         self.mock.save()
         self.assertTrue(self.mock.changed)
+
+class TestStoreDeleted(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock_to_deleted = StoreDeletedMock.objects.create()
+
+    def setUp(self):
+        self.mock_to_deleted.refresh_from_db()
+
+    def test_delete_model(self):
+        self.mock_to_deleted.delete()
+        self.assertIsNotNone(self.mock_to_deleted.deleted)

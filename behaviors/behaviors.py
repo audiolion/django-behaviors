@@ -8,7 +8,7 @@ from slugify import slugify
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
                         PublishedQuerySet, ReleasedQuerySet,
-                        DeletedQuerySet)
+                        StoreDeletedQuerySet)
 
 
 class Authored(models.Model):
@@ -158,13 +158,14 @@ class Timestamped(models.Model):
         return super(Timestamped, self).save(*args, **kwargs)
 
 
-class Deleted(models.Model):
+class StoreDeleted(models.Model):
     """
-    An abstract behavior representing deleted a model with``deleted`` field.
+    An abstract behavior representing storedeleted a model with``deleted`` field,
+    avoiding the model object to be deleted.
     """
     deleted = models.DateTimeField(null=True, blank=True)
 
-    objects = DeletedQuerySet.as_manager()
+    objects = StoreDeletedQuerySet.as_manager()
 
     class Meta:
         abstract = True
@@ -172,4 +173,4 @@ class Deleted(models.Model):
     def delete(self, *args, **kwargs):
         if self.pk:
             self.deleted = timezone.now()
-        return super(Deleted, self).save(*args, **kwargs)
+        return super(StoreDeleted, self).save(*args, **kwargs)
