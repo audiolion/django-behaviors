@@ -178,11 +178,17 @@ class TestStoreDeleted(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.mock_to_deleted = StoreDeletedMock.objects.create()
+        cls.mock_to_delete = StoreDeletedMock.objects.create()
+        cls.mock_to_restore = StoreDeletedMock.objects.create()
 
     def setUp(self):
-        self.mock_to_deleted.refresh_from_db()
+        self.mock_to_delete.refresh_from_db()
 
     def test_delete_model(self):
-        self.mock_to_deleted.delete()
-        self.assertIsNotNone(self.mock_to_deleted.deleted)
+        self.mock_to_delete.delete()
+        self.assertIsNotNone(self.mock_to_delete.deleted)
+
+    def test_restore_model(self):
+        self.mock_to_restore.delete()
+        self.mock_to_restore.restore()
+        self.assertIsNone(self.mock_to_restore.deleted)

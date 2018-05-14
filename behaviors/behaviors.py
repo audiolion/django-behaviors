@@ -161,7 +161,7 @@ class Timestamped(models.Model):
 class StoreDeleted(models.Model):
     """
     An abstract behavior representing storedeleted a model with``deleted`` field,
-    avoiding the model object to be deleted.
+    avoiding the model object to be deleted and restored.
     """
     deleted = models.DateTimeField(null=True, blank=True)
 
@@ -173,4 +173,9 @@ class StoreDeleted(models.Model):
     def delete(self, *args, **kwargs):
         if self.pk:
             self.deleted = timezone.now()
+        return super(StoreDeleted, self).save(*args, **kwargs)
+
+    def restore(self, *args, **kwargs):
+        if self.pk:
+            self.deleted = None
         return super(StoreDeleted, self).save(*args, **kwargs)
