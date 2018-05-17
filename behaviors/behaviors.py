@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 from slugify import slugify
 
@@ -170,12 +171,18 @@ class StoreDeleted(models.Model):
     class Meta:
         abstract = True
 
+    @property
+    def is_deleted(self):
+        return self.deleted != None
+
     def delete(self, *args, **kwargs):
-        if self.pk:
-            self.deleted = timezone.now()
+        if not self.pk:
+            raise ObjectDoesNotExist('Object must be created before it can be deleted')
+        self.deleted = timezone.now()
         return super(StoreDeleted, self).save(*args, **kwargs)
 
     def restore(self, *args, **kwargs):
-        if self.pk:
-            self.deleted = None
+        if not self.pk:
+            raise ObjectDoesNotExist('Object must be created before it can be restored')
+        self.deleted = None
         return super(StoreDeleted, self).save(*args, **kwargs)

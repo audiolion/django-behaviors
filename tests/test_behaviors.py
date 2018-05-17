@@ -9,6 +9,7 @@ Tests for `django-behaviors` behaviors module.
 """
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 from test_plus.test import TestCase
 
@@ -192,3 +193,31 @@ class TestStoreDeleted(TestCase):
         self.mock_to_restore.delete()
         self.mock_to_restore.restore()
         self.assertIsNone(self.mock_to_restore.deleted)
+
+    def test_delete_not_created_object_raises_exception(self):
+        mock = StoreDeletedMock()
+        self.assertIsNone(mock.pk)
+        with self.assertRaises(ObjectDoesNotExist) as raises_context:
+            mock.delete()
+            self.assertIsNotNone(raises_context)
+        
+    def test_restore_not_created_object_raises_exception(self):
+        mock = StoreDeletedMock()
+        self.assertIsNone(mock.pk)
+        with self.assertRaises(ObjectDoesNotExist) as raises_context:
+            mock.restore()
+            self.assertIsNotNone(raises_context)
+
+    def test_is_deleted_property_returns_true_when_delete_object(self):
+        self.mock_to_delete.delete()
+        self.assertTrue(self.mock_to_delete.is_deleted)
+
+    def test_is_deleted_property_returns_false_when_restore_object(self):
+        self.mock_to_restore.delete()
+        self.mock_to_restore.restore()
+        self.assertFalse(self.mock_to_restore.is_deleted)
+
+    def test_is_deleted_property_returns_false_when_create_object(self):
+        mock = StoreDeletedMock()
+        mock.save()
+        self.assertFalse(mock.is_deleted)
