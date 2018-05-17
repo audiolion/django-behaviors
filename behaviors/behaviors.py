@@ -3,11 +3,13 @@ from __future__ import unicode_literals
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 from slugify import slugify
 
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
-                        PublishedQuerySet, ReleasedQuerySet)
+                        PublishedQuerySet, ReleasedQuerySet,
+                        StoreDeletedQuerySet)
 
 
 class Authored(models.Model):
@@ -155,3 +157,32 @@ class Timestamped(models.Model):
         if self.pk:
             self.modified = timezone.now()
         return super(Timestamped, self).save(*args, **kwargs)
+
+
+class StoreDeleted(models.Model):
+    """
+    An abstract behavior representing store deleted a model with``deleted`` field,
+    avoiding the model object to be deleted and allowing you to restore it.
+    """
+    deleted = models.DateTimeField(null=True, blank=True)
+
+    objects = StoreDeletedQuerySet.as_manager()
+
+    class Meta:
+        abstract = True
+
+    @property
+    def is_deleted(self):
+        return self.deleted != None
+
+    def delete(self, *args, **kwargs):
+        if not self.pk:
+            raise ObjectDoesNotExist('Object must be created before it can be deleted')
+        self.deleted = timezone.now()
+        return super(StoreDeleted, self).save(*args, **kwargs)
+
+    def restore(self, *args, **kwargs):
+        if not self.pk:
+            raise ObjectDoesNotExist('Object must be created before it can be restored')
+        self.deleted = None
+        return super(StoreDeleted, self).save(*args, **kwargs)

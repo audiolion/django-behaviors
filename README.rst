@@ -43,6 +43,7 @@ Features
 
 - **Documented**, **tested**, and **easy to use**
 - **Timestamped** to add ``created`` and ``modified`` attributes to your models
+- **StoreDeleted** to add ``deleted`` attribute to your models, avoiding the record to be deleted and allow to restore it
 - **Authored** to add an ``author`` to your models
 - **Editored** to add an ``editor`` to your models
 - **Published** to add a ``publication_status`` (draft or published) to your models
@@ -57,6 +58,7 @@ Table of Contents
 
 - `Behaviors`_
    - `Timestamped`_
+   - `StoreDeleted`_
    - `Authored`_
    - `Editored`_
    - `Published`_
@@ -124,6 +126,65 @@ Here is an example of using the model, note you do not need to add ``models.Mode
     '2017-02-14 17:20:46.836395+00:00'
     >>> m.changed
     True
+
+StoreDeleted Behavior
+``````````````````````
+
+The model add a ``deleted`` field to your model and prevent record to be deleted and allow to restore it
+
+.. code-block:: python
+
+  class StoreDeleted(models.Model):
+      """
+      An abstract behavior representing store deleted a model with``deleted`` field,
+      avoiding the model object to be deleted and allowing you to restore it.
+      """
+      deleted = models.DateTimeField(null=True, blank=True)
+
+      objects = StoreDeletedQuerySet.as_manager()
+
+      class Meta:
+          abstract = True
+
+      def delete(self, *args, **kwargs):
+          if self.pk:
+              self.deleted = timezone.now()
+          return super(StoreDeleted, self).save(*args, **kwargs)
+
+      def restore(self, *args, **kwargs):
+          if self.pk:
+              self.deleted = None
+          return super(StoreDeleted, self).save(*args, **kwargs)
+
+``deleted`` is set when ``delete()`` method is called, with current UTC time.
+
+Here is an example of using the model, note you do not need to add ``models.Model`` because ``StoreDeleted`` already inherits it.
+
+.. code-block:: python
+
+    # models.py
+    from behaviors.behaviors import StoreDeleted
+
+
+    class GreatModel(StoreDeleted):
+        name = models.CharField(max_length=100)
+
+    # Deleting model
+    >>> gm = GreatModel.objects.create(name='Xtra')
+    >>> gm.deleted
+    None
+    >>> gm.delete()
+    >>> gm.deleted
+    '2018-05-14 08:35:41.197661+00:00'
+
+    # Restoring model
+    >>> gm = GreatModel.objects.deleted(name='Xtra')
+    >>> gm.deleted
+    '2018-05-14 08:35:41.197661+00:00'
+    >>> gm.restore()
+    >>> gm.deleted
+    None
+
 
 Authored Behavior
 ``````````````````
@@ -854,6 +915,7 @@ Tools used in rendering this package:
 .. _`cookiecutter-djangopackage`: https://github.com/pydanny/cookiecutter-djangopackage
 
 .. _`Timestamped`: #timestamped-behavior
+.. _`StoreDeleted`: #storedeleted-behavior
 .. _`Authored`: #authored-behavior
 .. _`Editored`: #editored-behavior
 .. _`Published`: #published-behavior

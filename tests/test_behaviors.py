@@ -9,13 +9,15 @@ Tests for `django-behaviors` behaviors module.
 """
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 
 from test_plus.test import TestCase
 
 from datetime import timedelta
 
 from .models import (AuthoredMock, EditoredMock, PublishedMock,
-                     ReleasedMock, SluggedMock, TimestampedMock)
+                     ReleasedMock, SluggedMock, TimestampedMock,
+                     StoreDeletedMock)
 
 
 class TestAuthored(TestCase):
@@ -172,3 +174,50 @@ class TestTimestamped(TestCase):
     def test_timestamp_changed_after_save(self):
         self.mock.save()
         self.assertTrue(self.mock.changed)
+
+class TestStoreDeleted(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock_to_delete = StoreDeletedMock.objects.create()
+        cls.mock_to_restore = StoreDeletedMock.objects.create()
+
+    def setUp(self):
+        self.mock_to_delete.refresh_from_db()
+
+    def test_delete_model(self):
+        self.mock_to_delete.delete()
+        self.assertIsNotNone(self.mock_to_delete.deleted)
+
+    def test_restore_model(self):
+        self.mock_to_restore.delete()
+        self.mock_to_restore.restore()
+        self.assertIsNone(self.mock_to_restore.deleted)
+
+    def test_delete_not_created_object_raises_exception(self):
+        mock = StoreDeletedMock()
+        self.assertIsNone(mock.pk)
+        with self.assertRaises(ObjectDoesNotExist) as raises_context:
+            mock.delete()
+            self.assertIsNotNone(raises_context)
+        
+    def test_restore_not_created_object_raises_exception(self):
+        mock = StoreDeletedMock()
+        self.assertIsNone(mock.pk)
+        with self.assertRaises(ObjectDoesNotExist) as raises_context:
+            mock.restore()
+            self.assertIsNotNone(raises_context)
+
+    def test_is_deleted_property_returns_true_when_delete_object(self):
+        self.mock_to_delete.delete()
+        self.assertTrue(self.mock_to_delete.is_deleted)
+
+    def test_is_deleted_property_returns_false_when_restore_object(self):
+        self.mock_to_restore.delete()
+        self.mock_to_restore.restore()
+        self.assertFalse(self.mock_to_restore.is_deleted)
+
+    def test_is_deleted_property_returns_false_when_create_object(self):
+        mock = StoreDeletedMock()
+        mock.save()
+        self.assertFalse(mock.is_deleted)

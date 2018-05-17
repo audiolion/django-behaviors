@@ -7,5 +7,5 @@ from . import views
 
 
 urlpatterns = [
-    url(r'/authored$', views.AuthoredMockCreateView.as_view(), name='authored'),
+    url(r'authored$', views.AuthoredMockCreateView.as_view(), name='authored'),
 ]
