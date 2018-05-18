@@ -51,6 +51,7 @@ class ReleasedManager(models.Manager):
     def no_release_date(self):
         return self.get_queryset().no_release_date()
 
+
 class StoreDeletedManager(models.Manager):
 
     def _get_base_queryset(self):

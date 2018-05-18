@@ -226,7 +226,7 @@ class TestStoreDeletedQuerySet(TestCase):
         self.assertEqual(queryset.count(), 5)
         for record in queryset:
             self.assertIsNone(record.deleted)
-    
+
     def test_deleted_returns_only_deleted_models(self):
         queryset = StoreDeletedMock.objects.deleted()
         self.assertIsNotNone(queryset)
@@ -246,4 +246,3 @@ class TestStoreDeletedQuerySet(TestCase):
         queryset = StoreDeletedMock.objects.allow_deleted()
         self.assertIsNotNone(queryset)
         self.assertEqual(queryset.count(), 10)
-            

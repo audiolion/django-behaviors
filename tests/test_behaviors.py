@@ -175,6 +175,7 @@ class TestTimestamped(TestCase):
         self.mock.save()
         self.assertTrue(self.mock.changed)
 
+
 class TestStoreDeleted(TestCase):
 
     @classmethod
@@ -200,7 +201,7 @@ class TestStoreDeleted(TestCase):
         with self.assertRaises(ObjectDoesNotExist) as raises_context:
             mock.delete()
             self.assertIsNotNone(raises_context)
-        
+
     def test_restore_not_created_object_raises_exception(self):
         mock = StoreDeletedMock()
         self.assertIsNone(mock.pk)

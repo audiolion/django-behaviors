@@ -173,7 +173,7 @@ class StoreDeleted(models.Model):
 
     @property
     def is_deleted(self):
-        return self.deleted != None
+        return self.deleted is not None
 
     def delete(self, *args, **kwargs):
         if not self.pk:

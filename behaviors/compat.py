@@ -1,5 +1,6 @@
 import django
 
+
 def is_authenticated(user):
     """
     Return whether or not a User is authenticated.
