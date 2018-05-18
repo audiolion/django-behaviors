@@ -3,6 +3,21 @@
 History
 -------
 
+0.4.1 (2018-05-17)
+++++++++++++++++++
+
+* Feature: Add ``StoreDeleted`` behavior to soft delete models (thanks @abekroenem)
+
+0.4.0 (2018-01-16)
+++++++++++++++++++
+
+* Update setup.py classifiers
+
+0.3.1 (2018-01-04)
+++++++++++++++++++
+
+* Add Django 2.0 and Python 3.6 Support
+
 0.3.0 (2017-03-11)
 ++++++++++++++++++
 
