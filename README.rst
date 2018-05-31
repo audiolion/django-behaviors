@@ -50,7 +50,7 @@ Features
 - **Editored** to add an ``editor`` to your models
 - **Published** to add a ``publication_status`` (draft or published) to your models
 - **Released** to add a ``release_date`` to your models
-- **Slugged** to add a ``slug`` to your models (thanks @apirobot) (enusre you have `awesome-slugify` installed, see above)
+- **Slugged** to add a ``slug`` to your models (thanks @apirobot) (ensure you have `awesome-slugify` installed, see above)
 - Easily compose together multiple ``behaviors`` to get desired functionality (e.g. ``Authored`` and ``Editored``)
 - Custom ``QuerySet`` methods added as managers to your models to utilize the added fields
 - Easily compose together multiple ``queryset`` or ``manager`` to get desired functionality
