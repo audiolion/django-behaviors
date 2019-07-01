@@ -49,3 +49,4 @@ docs/_build
 
 # Virtualenv folder
 .env/
+venv/
