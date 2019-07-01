@@ -151,7 +151,7 @@ class Timestamped(models.Model):
     ``modified`` fields.
     """
     created = models.DateTimeField(auto_now_add=True, db_index=True)
-    modified = models.DateTimeField(null=True, blank=True)
+    modified = models.DateTimeField(null=True, blank=True, db_index=True)
 
     class Meta:
         abstract = True
