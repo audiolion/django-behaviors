@@ -3,6 +3,13 @@
 History
 -------
 
+0.5.0 (2019-07-01)
+++++++++++++++++++
+
+* Drop Django 2.0 support and Python 3.4 support as they have reached EOL
+* Add Django 2.1, 2.2 and Python 3.7 support
+* Feature: Add db_index to ``Timestamped`` behavior's ``modified`` field (thanks @kazqvaizer)
+
 0.4.1 (2018-05-17)
 ++++++++++++++++++
 
