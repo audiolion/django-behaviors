@@ -37,6 +37,7 @@ setup(
     version=version,
     description="""Common behaviors for Django Models, e.g. Timestamps, Publishing, Authoring/Editing and more.""",
     long_description=readme + '\n\n' + history,
+    long_description_content_type='text/x-rst',
     author='Ryan Castner',
     author_email='castner.rr@gmail.com',
     url='https://github.com/audiolion/django-behaviors',
