@@ -274,6 +274,7 @@ If you are using functional views or another view type you simply need
 to make sure you pass the request object along with the form.
 
 .. code-block:: python
+
     # views.py
 
     class MyModelView(View):
@@ -300,13 +301,14 @@ If for some reason you don't want to mixin the ``AuthoredModelForm`` with your e
 form you can just add the user like so:
 
 .. code-block:: python
-    ...
+
+    # ...
     if form.is_valid()
         obj = form.save(commit=False)
         obj.author = request.user
         obj.save()
         return reverse(..)
-    ...
+    # ...
 
 But it isn't recommended, the ``AuthoredModelForm`` is tested and doesn't reassign the
 author on every save.
@@ -314,6 +316,7 @@ author on every save.
 The ``related_name`` is set so that it will never create conflicts. Given the above example if you wanted to do a reverse foreign key lookup from the User model and ``MyModel`` was part of the ``blogs`` app it could be done like so:
 
 .. code-block:: python
+
     >>> user = User.objects.get(pk=2)
     >>> user.blogs_mymodel_author.all()
     [<MyModel: ...>]
