@@ -725,7 +725,7 @@ The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model
         An abstract behavior representing adding a unique slug to a model
         based on the slug_source property.
         """
-        slug = models.SlugField(max_length=255, unique=True)
+        slug = models.SlugField(max_length=255, unique=True, blank=True)
 
         class Meta:
             abstract = True
