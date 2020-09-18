@@ -10,6 +10,7 @@ try:
 except ImportError:
     from django.utils.text import slugify
 
+from .apps import BehaviorsConfig
 from .querysets import (AuthoredQuerySet, EditoredQuerySet,
                         PublishedQuerySet, ReleasedQuerySet,
                         StoreDeletedQuerySet)
@@ -109,17 +110,21 @@ class Released(models.Model):
 
 class Slugged(models.Model):
     """
-    An abstract behavior representing adding a unique slug to a model
-    based on the slug_source property.
+    An abstract behavior representing adding a slug (by default, unique) to
+    a model based on the slug_source property.
     """
-    slug = models.SlugField(max_length=255, unique=True, blank=True)
+    slug = models.SlugField(
+        max_length=255,
+        unique=BehaviorsConfig.are_slug_unique(),
+        blank=True)
 
     class Meta:
         abstract = True
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = self.generate_unique_slug()
+            self.slug = self.generate_unique_slug() \
+                if BehaviorsConfig.are_slug_unique() else self.get_slug()
         super(Slugged, self).save(*args, **kwargs)
 
     def get_slug(self):
@@ -184,12 +189,14 @@ class StoreDeleted(models.Model):
 
     def delete(self, *args, **kwargs):
         if not self.pk:
-            raise ObjectDoesNotExist('Object must be created before it can be deleted')
+            raise ObjectDoesNotExist(
+                'Object must be created before it can be deleted')
         self.deleted = timezone.now()
         return super(StoreDeleted, self).save(*args, **kwargs)
 
     def restore(self, *args, **kwargs):
         if not self.pk:
-            raise ObjectDoesNotExist('Object must be created before it can be restored')
+            raise ObjectDoesNotExist(
+                'Object must be created before it can be restored')
         self.deleted = None
         return super(StoreDeleted, self).save(*args, **kwargs)

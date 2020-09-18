@@ -8,6 +8,7 @@ test_django-behaviors
 Tests for `django-behaviors` behaviors module.
 """
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -16,8 +17,8 @@ from test_plus.test import TestCase
 from datetime import timedelta
 
 from .models import (AuthoredMock, EditoredMock, PublishedMock,
-                     ReleasedMock, SluggedMock, TimestampedMock,
-                     StoreDeletedMock)
+                     ReleasedMock, SluggedMock, NonUniqueSluggedMock,
+                     TimestampedMock, StoreDeletedMock)
 
 
 class TestAuthored(TestCase):
@@ -151,12 +152,32 @@ class TestSlugged(TestCase):
         self.mock3.refresh_from_db()
 
     def test_title_field_slugged(self):
-        self.assertTrue(self.mock.slug, "slugged-title")
+        self.assertEqual(self.mock.slug, "slugged-title")
 
     def test_generate_unique_slug(self):
-        self.assertTrue(self.mock.slug, "slugged-title")
-        self.assertTrue(self.mock2.slug, "slugged-title-1")
-        self.assertTrue(self.mock3.slug, "slugged-title-2")
+        self.assertEqual(self.mock.slug, "slugged-title")
+        self.assertEqual(self.mock2.slug, "slugged-title-1")
+        self.assertEqual(self.mock3.slug, "slugged-title-2")
+
+
+@override_settings(UNIQUE_SLUG_BEHAVIOR=False)
+class TestNonUniqueSlugged(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.mock = NonUniqueSluggedMock.objects.create(title="Slugged Title")
+        cls.mock2 = NonUniqueSluggedMock.objects.create(title="Slugged TITLE")
+        cls.mock3 = NonUniqueSluggedMock.objects.create(title="SLUGGED Title")
+
+    def setUp(self):
+        self.mock.refresh_from_db()
+        self.mock2.refresh_from_db()
+        self.mock3.refresh_from_db()
+
+    def test_generate_non_unique_slug(self):
+        self.assertEqual(self.mock.slug, "slugged-title")
+        self.assertEqual(self.mock2.slug, "slugged-title")
+        self.assertEqual(self.mock3.slug, "slugged-title")
 
 
 class TestTimestamped(TestCase):

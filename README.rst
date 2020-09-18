@@ -722,17 +722,21 @@ The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model
 
     class Slugged(models.Model):
         """
-        An abstract behavior representing adding a unique slug to a model
-        based on the slug_source property.
+        An abstract behavior representing adding a slug (by default, unique) to
+        a model based on the slug_source property.
         """
-        slug = models.SlugField(max_length=255, unique=True, blank=True)
+        slug = models.SlugField(
+            max_length=255,
+            unique=BehaviorsConfig.are_slug_unique(),
+            blank=True)
 
         class Meta:
             abstract = True
 
         def save(self, *args, **kwargs):
             if not self.slug:
-                self.slug = self.generate_unique_slug()
+                self.slug = self.generate_unique_slug() \
+                    if BehaviorsConfig.are_slug_unique() else self.get_slug()
             super(Slugged, self).save(*args, **kwargs)
 
         def get_slug(self):
@@ -753,9 +757,14 @@ The ``Slugged`` behavior allows you to easily add a ``slug`` field to your model
 
             return new_slug
 
-The ``slug`` uses the awesome-slugify package which will preserve unicode character slugs. The ``slug`` must be unique and is guaranteed to be unique by the class appending a number ``-[0-9+]`` to the end of the slug if it is not unique. The ``unique`` field type `adds an index`_ to the ``slug`` field.
+The ``slug`` uses the awesome-slugify package which will preserve unicode
+character slugs. By default, the ``slug`` must be unique and is guaranteed to
+be unique by the class appending a number ``-[0-9+]`` to the end of the slug
+if it is not unique. The ``unique`` field type `adds an index`_ to the ``slug`` field.
 
 Add the ``slug_source`` property to your class when mixing in the behavior.
+
+To allow non-unique slugs, add ``UNIQUE_SLUG_BEHAVIOR = False`` to your project's settings.
 
 .. code-block:: python
 
@@ -784,7 +793,8 @@ Add the ``slug_source`` property to your class when mixing in the behavior.
     >>> m.get_absolute_url()
     '/myapp/prepended-text-for-fun-aj/detail'
 
-Your ``slug_source`` attribute can be a mix of any of the model data available at the time of save, generally it is some ``name`` type of field. You could also hash the primary key and/or some other data as a ``slug_source``. The ``slug`` is unique so it can be used to define the ``get_absolute_url()`` method on your model.
+Your ``slug_source`` attribute can be a mix of any of the model data available at the time of save, generally it is some ``name`` type of field. You could also hash the primary key and/or some other data as a ``slug_source``.
+By default, the ``slug`` is unique so it can be used to define the ``get_absolute_url()`` method on your model.
 
 Thanks to @apirobot for sending the PR for the ``Slugged`` behavior.
 
