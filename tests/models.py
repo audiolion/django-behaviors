@@ -3,7 +3,8 @@ from django.db import models
 from behaviors.behaviors import (Authored, Editored, Published, Released,
                                  Slugged, Timestamped, StoreDeleted)
 from behaviors.managers import (AuthoredManager, EditoredManager,
-                                PublishedManager, ReleasedManager, StoreDeletedManager)
+                                PublishedManager, ReleasedManager,
+                                StoreDeletedManager)
 from behaviors.querysets import PublishedQuerySet
 
 
@@ -20,6 +21,14 @@ class PublishedMock(Published):
 
 
 class SluggedMock(Slugged):
+    title = models.CharField(max_length=255)
+
+    @property
+    def slug_source(self):
+        return self.title
+
+
+class NonUniqueSluggedMock(Slugged):
     title = models.CharField(max_length=255)
 
     @property
