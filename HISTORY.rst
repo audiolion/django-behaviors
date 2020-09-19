@@ -3,6 +3,10 @@
 History
 =======
 
+0.5.1 (2020-09-19)
+------------------
+
+* Feature: ``Slugged`` behavior now supports non-unique slugs (thanks @vonmaster)
 
 0.5.0 (2019-07-01)
 ------------------

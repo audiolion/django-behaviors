@@ -16,3 +16,4 @@ Contributors
 * pabarros <abrahamkroenem@gmail.com>
 * richardnias
 * kazqvaizer <kazqvaizer@gmail.com>
+* vonmaster <chaabihi.salime@gmail.com>
