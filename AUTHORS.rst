@@ -17,3 +17,4 @@ Contributors
 * richardnias
 * kazqvaizer <kazqvaizer@gmail.com>
 * vonmaster <chaabihi.salime@gmail.com>
+* DmytroLitvinov <me@DmytroLitvinov.com>
